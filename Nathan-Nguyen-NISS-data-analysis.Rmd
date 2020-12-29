@@ -6,7 +6,7 @@ output:
     fig_caption: true
     latex_engine: pdflatex
     template: ~/R/NISS-data-challenge/temp.tex
-title: "NISS Data Challenge"
+title: "NISS Data Challenge - Education, Employment, and Earnings"
 author:
 - name: Nathan Nguyen
   affiliation: Duke University
@@ -32,17 +32,22 @@ library(usethis)
 library(patchwork)
 library(viridis)
 library(ggvis)
+library(stringr)
 ```
 
 ```{r load-data, message = FALSE, warning = FALSE, echo = FALSE}
 data <- read.csv("data/HSLSEEESAID.csv")
 ```
 
-# Data visualization and commentary
+# Introduction
 
 ```{r}
-
+ggplot(data, aes(S4EdExpected, fill = X4LOCALE))+
+  geom_bar(position = "fill", width = .5)+
+  coord_flip()+
+  theme_linedraw()
 ```
+
 
 
 
