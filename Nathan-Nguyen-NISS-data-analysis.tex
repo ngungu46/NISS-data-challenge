@@ -215,14 +215,76 @@ with the \texttt{knitr} package.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{ggplot}\NormalTok{(data, }\KeywordTok{aes}\NormalTok{(S4EdExpected, }\DataTypeTok{fill =}\NormalTok{ X4LOCALE))}\OperatorTok{+}
-\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{position =} \StringTok{"fill"}\NormalTok{, }\DataTypeTok{width =} \FloatTok{.5}\NormalTok{)}\OperatorTok{+}
-\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}\OperatorTok{+}
-\StringTok{  }\KeywordTok{theme_linedraw}\NormalTok{()}
+\KeywordTok{library}\NormalTok{(showtext)}
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Nathan-Nguyen-NISS-data-analysis_files/figure-latex/unnamed-chunk-1-1.pdf}
+\begin{verbatim}
+## Loading required package: sysfonts
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: showtextdb
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{font_add_google}\NormalTok{(}\StringTok{"Poppins"}\NormalTok{, }\StringTok{"Poppins"}\NormalTok{)}
+\KeywordTok{font_add_google}\NormalTok{(}\StringTok{"Lora"}\NormalTok{, }\StringTok{"Lora"}\NormalTok{)}
+\KeywordTok{showtext_auto}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{order2 <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Don't know"}\NormalTok{, }\StringTok{"More than a bachelor's degree"}\NormalTok{, }\StringTok{"Bachelor's degree"}\NormalTok{, }
+           \StringTok{"Associate's degree"}\NormalTok{, }\StringTok{"Some college"}\NormalTok{, }
+           \StringTok{"High school diploma, equivalent, or less"}
+\NormalTok{           )}
+
+\NormalTok{order <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Don't Know"}\NormalTok{, }\StringTok{"Other"}\NormalTok{, }\StringTok{"Trades and technical"}\NormalTok{, }\StringTok{"STEM"}\NormalTok{, }\StringTok{"Service"}\NormalTok{,}
+            \StringTok{"Military and protective services"}\NormalTok{, }\StringTok{"Healthcare"}\NormalTok{, }\StringTok{"Education"}\NormalTok{, }
+            \StringTok{"Business and Management"}\NormalTok{, }\StringTok{"Arts and entertainment"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{theme_set}\NormalTok{(}\KeywordTok{theme_light}\NormalTok{(}\DataTypeTok{base_size =} \DecValTok{9}\NormalTok{, }\DataTypeTok{base_family =} \StringTok{"Lora"}\NormalTok{))}
+
+\KeywordTok{ggplot}\NormalTok{(data, }\KeywordTok{aes}\NormalTok{(}\KeywordTok{factor}\NormalTok{(S4JobIndustry, }\DataTypeTok{levels =}\NormalTok{ order), }\DataTypeTok{fill =}\NormalTok{ X4LOCALE))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{position =} \StringTok{"fill"}\NormalTok{, }\DataTypeTok{width =} \FloatTok{.5}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_viridis_d}\NormalTok{()}\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_linedraw}\NormalTok{()}\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{y =} \StringTok{"Percentage"}\NormalTok{,}
+       \DataTypeTok{x =} \StringTok{"Expected Job"}\NormalTok{,}
+       \DataTypeTok{fill =} \StringTok{"Location"}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}
+    \DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{family =} \StringTok{"Lora"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
+    \DataTypeTok{legend.position =} \StringTok{"bottom"}\NormalTok{,}
+    \DataTypeTok{axis.ticks.x =} \KeywordTok{element_blank}\NormalTok{()}
+\NormalTok{  )}\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_y_continuous}\NormalTok{(}\DataTypeTok{labels =} \ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{paste0}\NormalTok{(x}\OperatorTok{*}\DecValTok{100}\NormalTok{, }\StringTok{"%"}\NormalTok{), }\DataTypeTok{expand =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{0}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Nathan-Nguyen-NISS-data-analysis_files/figure-latex/visualization-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(data, }\KeywordTok{aes}\NormalTok{(S4EdExpected, X4X2SES, }\DataTypeTok{color =}\NormalTok{ S4EdExpected))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_boxplot}\NormalTok{()}\OperatorTok{+}
+\StringTok{  }\KeywordTok{stat_summary}\NormalTok{(}\DataTypeTok{fun =}\NormalTok{ mean, }\DataTypeTok{geom =} \StringTok{"point"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{3}\NormalTok{)}\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}
+    \DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{family =} \StringTok{"Lora"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
+    \DataTypeTok{legend.position =} \StringTok{"none"}\NormalTok{,}
+    \DataTypeTok{panel.grid =} \KeywordTok{element_blank}\NormalTok{()}
+\NormalTok{  )}\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_color_viridis_d}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
 \newpage
 \singlespacing 
 \bibliography{\textasciitilde/Dropbox/master.bib}
