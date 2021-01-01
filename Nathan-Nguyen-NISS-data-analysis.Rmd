@@ -31,42 +31,56 @@ library(tidyverse)
 library(usethis)
 library(patchwork)
 library(viridis)
-library(ggvis)
 library(stringr)
+library("ggsci")
+library("wesanderson")
 ```
 
-```{r load-data, message = FALSE, warning = FALSE, echo = FALSE}
+```{r load-data, message = FALSE, warning = FALSE}
+#load data
 data <- read.csv("data/HSLSEEESAID.csv")
 ```
 
 # Introduction
 
-```{r text-setup}
+```{r text-setup, message = FALSE, warning = FALSE}
+#load packages and themes
 library(showtext)
-font_add_google("Poppins", "Poppins")
+library(tidyverse)
 font_add_google("Lora", "Lora")
 showtext_auto()
 ```
 
 ```{r rearrange-vectors}
-order2 <- c("Don't know", "More than a bachelor's degree", "Bachelor's degree", 
-           "Associate's degree", "Some college", 
-           "High school diploma, equivalent, or less"
-           )
-
 order <- c("Don't Know", "Other", "Trades and technical", "STEM", "Service",
             "Military and protective services", "Healthcare", "Education", 
             "Business and Management", "Arts and entertainment")
 ```
 
+```{r processing-data, message=F}
+#process data 
+processed_data <- data %>%
+  mutate(S4JobIndustry = factor(S4JobIndustry, levels = order)) %>%
+  group_by(S4JobIndustry, X4LOCALE) %>%
+  summarise(count_location = n()) %>%
+  group_by(S4JobIndustry) %>%
+  mutate(count = sum(count_location)) %>%
+  mutate(percent = count_location/count*100) %>%
+  ungroup()
+
+#create a new variable for positions of percentages on the graphs
+processed_data <- processed_data %>%
+  group_by(S4JobIndustry) %>%
+  mutate(pos = 100 - cumsum(percent) + (0.5*percent))
+```
 
 ```{r visualization}
-theme_set(theme_light(base_size = 9, base_family = "Lora"))
-
-ggplot(data, aes(factor(S4JobIndustry, levels = order), fill = X4LOCALE))+
-  geom_bar(position = "fill", width = .5)+
+ggplot(processed_data, aes(x = factor(S4JobIndustry, levels = order), 
+                           y = percent,
+                           fill = X4LOCALE))+
+  geom_bar(stat = "identity", width = .5)+
   coord_flip()+
-  scale_fill_viridis_d()+
+  scale_fill_manual(values = c("red", "black", "blue", "grey50"))+
   theme_linedraw()+
   labs(y = "Percentage",
        x = "Expected Job",
@@ -74,11 +88,19 @@ ggplot(data, aes(factor(S4JobIndustry, levels = order), fill = X4LOCALE))+
   theme(
     text = element_text(family = "Lora", size = 12),
     legend.position = "bottom",
-    axis.ticks.x = element_blank()
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank()
   )+
-  scale_y_continuous(labels = function(x) paste0(x*100, "%"), expand = c(0,0))
+  scale_y_continuous(labels = function(x) paste0(x, "%"))+
+  geom_text(processed_data, mapping = aes(x = S4JobIndustry, 
+                                y = pos,
+                                label = paste0(round(percent),"%")), 
+            size = 4,
+            color = "white")
 ```
-```{r eval = F}
+
+
+```{r include = F}
 ggplot(data, aes(S4EdExpected, X4X2SES, color = S4EdExpected))+
   geom_boxplot()+
   stat_summary(fun = mean, geom = "point", size = 3)+
