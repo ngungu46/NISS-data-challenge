@@ -136,7 +136,7 @@
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={Nathan Nguyen (Duke University)},
-             pdfkeywords = {pandoc, r markdown, knitr},  
+             pdfkeywords = {},  
             pdftitle={NISS Data Challenge - Education, Employment, and Earnings},
             colorlinks=true,
             citecolor=blue,
@@ -191,17 +191,17 @@
 
     \vskip 8.5pt % \small 
 
-\noindent This document provides an introduction to R Markdown, argues for its
-benefits, and presents a sample manuscript template intended for an
-academic audience. I include basic syntax to R Markdown and a minimal
-working example of how the analysis itself can be conducted within R
-with the \texttt{knitr} package.
+\noindent The location of the school where the ninth-graders attended might
+contribute to their predicted/aspired future occupation. Different
+locations such as the town, city, rural might sociologically affect
+one's decision to get a job. To investigate other perspectives in the
+original data given by the NISS competition organizer, I use the
+variables S4JobIndustry and X4LOCALE to estimate the percentage of
+ninth-graders in different high school locations, grouped by 2016
+expected occupation.
 
-
-\vskip 8.5pt \noindent \emph{Keywords}: pandoc, r markdown, knitr \par
 
     \hbox{\vrule height .2pt width 39.14pc}
-
 
 
 \end{abstract}
@@ -217,14 +217,17 @@ with the \texttt{knitr} package.
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{introduction}{%
-\section{Introduction}\label{introduction}}
+\hypertarget{question-how-did-2009-ninth-graders-attending-high-school-in-different-regions-predict-their-occupation-in-2016}{%
+\section{Question: How did 2009 ninth-graders attending high school in
+different regions predict their occupation in
+2016?}\label{question-how-did-2009-ninth-graders-attending-high-school-in-different-regions-predict-their-occupation-in-2016}}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{#load packages and themes}
 \KeywordTok{library}\NormalTok{(showtext)}
 \KeywordTok{library}\NormalTok{(tidyverse)}
+\KeywordTok{library}\NormalTok{(viridis)}
 \KeywordTok{font_add_google}\NormalTok{(}\StringTok{"Lora"}\NormalTok{, }\StringTok{"Lora"}\NormalTok{)}
 \KeywordTok{showtext_auto}\NormalTok{()}
 \end{Highlighting}
@@ -232,9 +235,27 @@ with the \texttt{knitr} package.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{order <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Don't Know"}\NormalTok{, }\StringTok{"Other"}\NormalTok{, }\StringTok{"Trades and technical"}\NormalTok{, }\StringTok{"STEM"}\NormalTok{, }\StringTok{"Service"}\NormalTok{,}
-            \StringTok{"Military and protective services"}\NormalTok{, }\StringTok{"Healthcare"}\NormalTok{, }\StringTok{"Education"}\NormalTok{, }
-            \StringTok{"Business and Management"}\NormalTok{, }\StringTok{"Arts and entertainment"}\NormalTok{)}
+\NormalTok{order <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Don't Know"}\NormalTok{, }\StringTok{"Other"}\NormalTok{, }\StringTok{"Trades and }\CharTok{\textbackslash{}n}\StringTok{ technical"}\NormalTok{, }\StringTok{"STEM"}\NormalTok{, }\StringTok{"Service"}\NormalTok{,}
+            \StringTok{"Military and }\CharTok{\textbackslash{}n}\StringTok{ protective services"}\NormalTok{, }\StringTok{"Healthcare"}\NormalTok{, }\StringTok{"Education"}\NormalTok{, }
+            \StringTok{"Business and }\CharTok{\textbackslash{}n}\StringTok{ Management"}\NormalTok{, }\StringTok{"Arts and }\CharTok{\textbackslash{}n}\StringTok{ entertainment"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Processing S4JobIndustry's values so that it saves space in the graph}
+\NormalTok{data <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{S4JobIndustry =} \KeywordTok{case_when}\NormalTok{(}
+\NormalTok{    S4JobIndustry }\OperatorTok{==}\StringTok{ "Military and protective services"} \OperatorTok{~}\StringTok{ }
+\StringTok{      "Military and }\CharTok{\textbackslash{}n}\StringTok{ protective services"}\NormalTok{,}
+\NormalTok{    S4JobIndustry }\OperatorTok{==}\StringTok{ "Business and Management"} \OperatorTok{~}\StringTok{ }
+\StringTok{      "Business and }\CharTok{\textbackslash{}n}\StringTok{ Management"}\NormalTok{,}
+\NormalTok{    S4JobIndustry }\OperatorTok{==}\StringTok{ "Arts and entertainment"} \OperatorTok{~}\StringTok{ }
+\StringTok{      "Arts and }\CharTok{\textbackslash{}n}\StringTok{ entertainment"}\NormalTok{,}
+\NormalTok{    S4JobIndustry }\OperatorTok{==}\StringTok{ "Trades and technical"} \OperatorTok{~}
+\StringTok{      "Trades and }\CharTok{\textbackslash{}n}\StringTok{ technical"}\NormalTok{,}
+    \OtherTok{TRUE} \OperatorTok{~}\StringTok{ }\NormalTok{S4JobIndustry}
+\NormalTok{  ))}
 \end{Highlighting}
 \end{Shaded}
 
@@ -259,17 +280,18 @@ with the \texttt{knitr} package.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{ggplot}\NormalTok{(processed_data, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{factor}\NormalTok{(S4JobIndustry, }\DataTypeTok{levels =}\NormalTok{ order), }
+\CommentTok{#visualizing with a stacked bar chart}
+\NormalTok{g <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(processed_data, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{factor}\NormalTok{(S4JobIndustry, }\DataTypeTok{levels =}\NormalTok{ order), }
                            \DataTypeTok{y =}\NormalTok{ percent,}
                            \DataTypeTok{fill =}\NormalTok{ X4LOCALE))}\OperatorTok{+}
 \StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{, }\DataTypeTok{width =} \FloatTok{.5}\NormalTok{)}\OperatorTok{+}
-\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}\OperatorTok{+}
-\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"red"}\NormalTok{, }\StringTok{"black"}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"grey50"}\NormalTok{))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}\OperatorTok{+}\StringTok{ }\CommentTok{#flip the chart}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"red"}\NormalTok{, }\StringTok{"black"}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"grey50"}\NormalTok{))}\OperatorTok{+}\StringTok{ }\CommentTok{#set color}
 \StringTok{  }\KeywordTok{theme_linedraw}\NormalTok{()}\OperatorTok{+}
 \StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{y =} \StringTok{"Percentage"}\NormalTok{,}
        \DataTypeTok{x =} \StringTok{"Expected Job"}\NormalTok{,}
        \DataTypeTok{fill =} \StringTok{"Location"}\NormalTok{)}\OperatorTok{+}
-\StringTok{  }\KeywordTok{theme}\NormalTok{(}
+\StringTok{  }\KeywordTok{theme}\NormalTok{( }\CommentTok{#set theme}
     \DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{family =} \StringTok{"Lora"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
     \DataTypeTok{legend.position =} \StringTok{"bottom"}\NormalTok{,}
     \DataTypeTok{panel.grid.major.y =} \KeywordTok{element_blank}\NormalTok{(),}
@@ -281,10 +303,62 @@ with the \texttt{knitr} package.
                                 \DataTypeTok{label =} \KeywordTok{paste0}\NormalTok{(}\KeywordTok{round}\NormalTok{(percent),}\StringTok{"%"}\NormalTok{)), }
             \DataTypeTok{size =} \DecValTok{4}\NormalTok{,}
             \DataTypeTok{color =} \StringTok{"white"}\NormalTok{)}
+
+\NormalTok{g}
 \end{Highlighting}
 \end{Shaded}
 
+\begin{figure}
+\centering
 \includegraphics{Nathan-Nguyen-NISS-data-analysis_files/figure-latex/visualization-1.pdf}
+\caption{\label{fig:figs}Percentage distribution of 2009 ninth-graders,
+by geographical region of last attended high school, grouped by expected
+occupations in 2016}
+\end{figure}
+
+Based on the visualization, I obtained these key findings:
+
+\begin{itemize}
+\tightlist
+\item
+  Across all the expected occupations, ninth-graders equally attended
+  their last high school in city, rural and suburb area, but the
+  percentage of ninth-graders attended high school in town is remarkably
+  lower (approximately 2 or 2.5 times smaller than the percentage of
+  students in city, rural, and suburb area).
+\item
+  Ninth-graders expected to have an occupation in STEM field tend to be
+  on the city and suburb area, with respective percentage of \(32 \%\)
+  and \(34 \%\) each, whereas the percentage of ninth-graders in rural
+  area and town is remarkably lower compared to the other two (with
+  \(23 \%\) and \(11 \%\) each).
+\item
+  We can see that generally, in each expected occupation, the percentage
+  of ninth-graders attended rural high school is slightly lower than the
+  percentage of ninth-graders attended their last high school in city
+  and suburb. However, we can see that this is not true with the
+  expected jobs in trades and technical, education, and service.
+\item
+  In service, the percentage of ninth-graders attended rural high school
+  is slightly lower than the percentage of ninth-graders attended their
+  last high school in the suburb (\(29 \%\) compared to \(28 \%\)),
+  while considering expected job in education, the percentage of
+  ninth-graders attended rural high school is slightly higher than both
+  the percentage of ninth-graders attended their last high school in
+  city and suburb (\(30 \%\) compared to \(29 \%\) of both city and
+  suburb's percentage).
+\item
+  The most remarkable difference is in the category trades and
+  technical, where the percentage of ninth-graders attended rural high
+  school is clearly larger than the percentage of ninth-graders attended
+  their last high school in city and suburb, which is \(36 \%\),
+  remarkably high compared to other category. We can also see that the
+  percentage of ninth-graders in town is higher when considering the
+  occupation in trades and technical, which is \(16 \%\). It is clear
+  that the percentages of ninth-graders expected to have a job in trades
+  and technical whose last attended high school is in town and rural
+  area, are remarkably higher.
+\end{itemize}
 \newpage
 \singlespacing 
 \bibliography{\textasciitilde/Dropbox/master.bib}
